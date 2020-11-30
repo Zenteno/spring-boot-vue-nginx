@@ -1,25 +1,52 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: node-deployment
+  name: spring-deployment
   labels:
-    app: node-deployment
+    app: spring-deployment
 spec:
-  replicas: 5
+  replicas: 3
   selector:
     matchLabels:
-      app: node-app
+      app: spring-app
   template:
     metadata:
       labels:
-        app: node-app
+        app: spring-app
     spec:
       containers:
       - name: spring
         env:
-          - name: HOST
-            value: "192.168.1.9"
-        imagePullPolicy: IfNotPresent
-        image: spring-boot:1.0
+          - name: DB_HOST
+            value: "localhost"
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: cloudsql-db-credentials
+                key: username
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: cloudsql-db-credentials
+                key: password
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: cloudsql-db-credentials
+                key: dbname
+        image: us.gcr.io/proyecto-kubernetes-297222/spring-app
         ports:
         - containerPort: 8080
+      - name: proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy",
+                  "-instances=proyecto-kubernetes-297222:us-east1:mysql-instancia-1=tcp:3306",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+        volumeMounts:
+          - name: cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+      volumes:
+      - name: cloudsql-instance-credentials
+        secret:
+          secretName: cloudsql-instance-credentials  

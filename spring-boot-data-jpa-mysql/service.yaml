@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: node-servicio
+  name: spring-servicio
 spec:
   selector:
-    app: node-app
+    app: spring-app
   type: LoadBalancer
   ports:
     - protocol: TCP
