@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: spring-servicio
+  name: front-servicio
 spec:
   selector:
-    app: spring-app
-  type: ClusterIP
+    app: front-spring
+  type: LoadBalancer
   ports:
     - protocol: TCP
-      port: 8080
+      port: 80
       targetPort: 8080
